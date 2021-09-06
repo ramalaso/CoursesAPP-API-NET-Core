@@ -83,15 +83,30 @@ namespace CourseLibrary.API.Controllers
             var courseForAuthorFromRepo = _courseLibraryRepository.GetCourse(authorId, courseId);
             if (courseForAuthorFromRepo == null) return NotFound();
             var coursePatch = _mapper.Map<CourseForUpdateDto>(courseForAuthorFromRepo);
+            patchDocument.ApplyTo(coursePatch);
             if (TryValidateModel(coursePatch))
             {
                 return ValidationProblem(ModelState);
             }
-            patchDocument.ApplyTo(coursePatch);
             _mapper.Map(coursePatch, courseForAuthorFromRepo);
             _courseLibraryRepository.UpdateCourse(courseForAuthorFromRepo);
             _courseLibraryRepository.Save();
             return NoContent();
         }
+
+        [HttpDelete("{courseId}")]
+        public ActionResult DeleteCourseForAuthor(Guid authorId, Guid courseId)
+        {
+            if(!_courseLibraryRepository.AuthorExists(authorId))
+            {
+                return NotFound();
+            }
+            var courseForAuthorFromRepo = _courseLibraryRepository.GetCourse(authorId, courseId);
+            if (courseForAuthorFromRepo == null) return NotFound();
+            _courseLibraryRepository.DeleteCourse(courseForAuthorFromRepo);
+            _courseLibraryRepository.Save();
+            return NoContent();
+        }
+
     }
 }
